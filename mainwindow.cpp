@@ -14,11 +14,13 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    connect(ui->startButton, &QPushButton::pressed, this, &MainWindow::getData);
+    connect(ui->startButton, &QPushButton::pressed, this, &MainWindow::getAeData);
+    connect(ui->getTrButton, &QPushButton::pressed, this, &MainWindow::getTrData);
 
     connect(&m_device, &DeviceCommunication::dataAeReady, this, &MainWindow::onReceivedAeData);
     connect(&m_device, &DeviceCommunication::dataTrReady, this, &MainWindow::onReceivedTrData);
     connect(&m_device, &DeviceCommunication::readFromSettings, this, &MainWindow::onReadFromSettings);
+    connect(&m_device, &DeviceCommunication::readFromCommand, this, &MainWindow::onReadFromCommand);
 
     connect(&m_device, &DeviceCommunication::isReadingDataChanged,
             this, [this] (bool isReadingData)
@@ -40,10 +42,24 @@ void MainWindow::getData()
     m_logFile.setFileName("log_" + QString::number(QDateTime::currentSecsSinceEpoch()) + ".txt");
     m_logFile.open(QIODevice::ReadWrite | QIODevice::Text);
 
-    ui->plainTextEdit->appendPlainText("Started reading from serial port for 5 seconds\n");
+    ui->plainTextEdit->appendPlainText("Started reading from serial port\n");
 
     m_elapsedTimer.start();
     m_device.readAeData();
+}
+
+void MainWindow::getAeData()
+{
+    qDebug() << __func__;
+    ui->plainTextEdit->appendPlainText("Sending get_ae_data command...");
+    m_device.sendCommand("get_ae_data\n");
+}
+
+void MainWindow::getTrData()
+{
+    qDebug() << __func__;
+    ui->plainTextEdit->appendPlainText("Sending get_tr_data command...");
+    m_device.sendCommand("get_tr_data\n");
 }
 
 void MainWindow::onReceivedAeData(const QStringList &dataList)
@@ -101,4 +117,16 @@ void MainWindow::onReadFromSettings(const QByteArray &buffer)
     logStream << buffer;
     logStream.flush();
     logFile.close();
+}
+
+void MainWindow::onReadFromCommand(const QByteArray &buffer)
+{
+    QFile logFile("command-reply_" + QString::number(QDateTime::currentSecsSinceEpoch()) + ".txt");
+    logFile.open(QIODevice::ReadWrite | QIODevice::Text);
+    QTextStream logStream(&logFile);
+    logStream << buffer;
+    logStream.flush();
+    logFile.close();
+
+    ui->plainTextEdit->appendPlainText(QString("get ae data received %1 bytes").arg(buffer.size()));
 }

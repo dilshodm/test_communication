@@ -40,6 +40,7 @@ private:
         GetAE,
         GetTR,
         Settings,
+        Command,
     };
 
 public:
@@ -47,6 +48,7 @@ public:
     virtual ~DeviceCommunication() override;
 
     void sendInitData();
+    void sendCommand(const QByteArray &command);
 
     void readAeData();
     void readTrData();
@@ -61,6 +63,7 @@ signals:
     void isReadingDataChanged(bool);
 
     void readFromSettings(const QByteArray &);
+    void readFromCommand(const QByteArray &);
 
 private slots:
     void onReadyRead();

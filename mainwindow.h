@@ -19,9 +19,12 @@ public:
 
 private slots:
     void getData();
+    void getAeData();
+    void getTrData();
     void onReceivedAeData(const QStringList &dataList);
     void onReceivedTrData(const QStringList &dataList);
     void onReadFromSettings(const QByteArray &buffer);
+    void onReadFromCommand(const QByteArray &buffer);
 
 private:
     Ui::MainWindow *ui;

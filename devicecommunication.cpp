@@ -66,7 +66,14 @@ void DeviceCommunication::sendInitData()
                          "set_acq ddt 400\n"
                          "set_acq tr_enabled 1\n"
                          "set_acq status_interval 1000\n"
-                         "set_acq enabled 1\n";
+                         "set_acq enabled 1\n"
+            ;
+    m_serialPort.write(command);
+}
+
+void DeviceCommunication::sendCommand(const QByteArray &command)
+{
+    m_getMode = GetMode::Command;
     m_serialPort.write(command);
 }
 
@@ -229,6 +236,7 @@ void DeviceCommunication::parseTr(QByteArray &buffer)
 void DeviceCommunication::onReadyRead()
 {
     auto buffer = m_serialPort.readAll();
+    qDebug() << "Received" << buffer;
 
     switch (m_getMode) {
     case GetMode::GetAE:
@@ -241,6 +249,10 @@ void DeviceCommunication::onReadyRead()
 
     case GetMode::Settings:
         emit readFromSettings(buffer);
+        break;
+
+    case GetMode::Command:
+        emit readFromCommand(buffer);
         break;
 
     default:
